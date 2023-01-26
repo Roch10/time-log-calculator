@@ -174,7 +174,12 @@ const AddLog = () => {
               if (data) {
                 newData = JSON.parse(data);
               }
-              newData.push(timeLog);
+              newData.push({
+                ...timeLog,
+                totalBreaks,
+                totalHours,
+                totalWorkedHours,
+              });
               localStorage.setItem("data", JSON.stringify(newData));
               navigate("/");
             }}

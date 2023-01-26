@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const navigate = useNavigate();
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    let localData = localStorage.getItem("data");
+    if (localData) {
+      setData(JSON.parse(localData));
+    }
+  }, [1]);
 
   return (
     <div className="container">
@@ -33,11 +41,29 @@ const Home = () => {
                 <th scope="col">Name</th>
                 <th scope="col">Total Hours</th>
                 <th scope="col">Total Breaks</th>
+                <th scope="col">Total Worked Hours</th>
                 <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
+              {data.map((x: any, i) => {
+                return (
+                  <tr>
+                    <th scope="row">{i + 1}</th>
+                    <td>{x.name}</td>
+                    <td>{x.totalHours}</td>
+                    <td>{x.totalBreaks}</td>
+                    <td>{x.totalWorkedHours}</td>
+                    <td>
+                      <div className="d-flex">
+                        <FaEdit />
+                        <FaTrash className="ms-2 text-danger" />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {/* <tr>
                 <th scope="row">1</th>
                 <td>Mohit</td>
                 <td>101</td>
@@ -60,7 +86,7 @@ const Home = () => {
                     <FaTrash className="ms-2 text-danger" />
                   </div>
                 </td>
-              </tr>
+              </tr> */}
             </tbody>
           </table>
         </div>
