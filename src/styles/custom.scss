@@ -1,0 +1,20 @@
+@import "~bootstrap/scss/bootstrap.scss";
+
+:root {
+  --primary: #0c5597;
+}
+
+.main {
+  height: 100vh;
+}
+
+.btn-primary,
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:visited {
+  background-color: var(--primary) !important;
+}
+
+h1 {
+  color: var(--primary);
+}
