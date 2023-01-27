@@ -8,6 +8,7 @@ import moment from "moment";
 import TimeSelector from "../components/timeSelectot";
 import { TimeLog } from "../models/TimeLog";
 import { useNavigate } from "react-router-dom";
+import { FaTrash } from "react-icons/fa";
 
 const NEW_TIME_LOG = {
   sHr: "",
@@ -20,6 +21,12 @@ const NEW_TIME_LOG = {
 
 const AddLog = () => {
   const navigate = useNavigate();
+  const [timeLogList, setTimeLogList] = useState<Array<TimeLog>>([]);
+  const [totals, setTotals] = useState({
+    totalBreaks: 0,
+    totalHours: 0,
+    totalWorkedHours: 0,
+  });
   const [timeLog, setTimeLog] = useState<TimeLog>({
     name: "",
     sHr: "",
@@ -28,12 +35,9 @@ const AddLog = () => {
     eHr: "",
     eMin: "",
     eAA: "PM",
+    date: moment(new Date()).format("YYYY-MM-DD"),
     breaks: [NEW_TIME_LOG],
   });
-
-  const [totalHours, setTotalHours] = useState(0);
-  const [totalBreaks, setTotalBreaks] = useState(0);
-  const [totalWorkedHours, setTotalWorkedHours] = useState(0);
 
   const handleBreaks = (isAdd: boolean) => {
     let newBreakList = timeLog.breaks ? [...timeLog.breaks] : [];
@@ -69,6 +73,31 @@ const AddLog = () => {
     return +hours.toFixed(2);
   };
 
+  const getTotalLog = (arr: Array<any>, prop: string) => {
+    let total = 0;
+    if (arr.length) {
+      arr.forEach((item) => {
+        total += item[prop];
+      });
+    }
+    return +total.toFixed(2);
+  };
+
+  const deleteTimeLog = (i: number) => {
+    let a = timeLogList;
+    a.splice(i, 1);
+    setTimeLogList(a);
+  };
+
+  useEffect(() => {
+    if (timeLogList.length)
+      setTotals({
+        totalBreaks: getTotalLog([...timeLogList], "totalBreaks"),
+        totalHours: getTotalLog([...timeLogList], "totalHours"),
+        totalWorkedHours: getTotalLog([...timeLogList], "totalWorkedHours"),
+      });
+  }, [timeLogList]);
+
   return (
     <div className="container">
       <div className="row my-5">
@@ -86,6 +115,16 @@ const AddLog = () => {
               id="name"
               value={timeLog.name}
               onChange={(e) => setTimeLog({ ...timeLog, name: e.target.value })}
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Date</label>
+            <input
+              type={"date"}
+              className="form-control"
+              id="date"
+              value={timeLog.date}
+              onChange={(e) => setTimeLog({ ...timeLog, date: e.target.value })}
             />
           </div>
 
@@ -127,8 +166,6 @@ const AddLog = () => {
             type="button"
             className="btn btn-primary"
             onClick={() => {
-              console.log("timeLog", timeLog);
-
               let totalHours = getDifference(timeLog);
               let breaks = timeLog.breaks?.map((b) => {
                 console.log("breaks", getDifference(b));
@@ -140,27 +177,53 @@ const AddLog = () => {
 
               let totalWorkedHours = totalHours - totalBreaks;
 
-              setTotalHours(totalHours);
-              setTotalBreaks(totalBreaks);
-              setTotalWorkedHours(totalWorkedHours);
+              setTimeLogList([
+                ...timeLogList,
+                {
+                  ...timeLog,
+                  totalHours: +totalHours.toFixed(2),
+                  totalBreaks: +totalBreaks.toFixed(2),
+                  totalWorkedHours: +totalWorkedHours.toFixed(2),
+                },
+              ]);
             }}
           >
-            Calculate
+            Calculate & Add
           </button>
 
           <table className="table table-striped mt-4">
             <thead>
               <tr>
+                <th scope="col">Date</th>
                 <th scope="col">Total Hours</th>
                 <th scope="col">Total Break</th>
                 <th scope="col">Total Worked Hours</th>
+                <th scope="col">Action</th>
               </tr>
             </thead>
             <tbody>
+              {timeLogList.map((log, i) => {
+                return (
+                  <tr key={i}>
+                    <td scope="row">{log.date}</td>
+                    <td>{log.totalHours || 0}</td>
+                    <td>{log.totalBreaks || 0}</td>
+                    <td>{log.totalWorkedHours || 0}</td>
+                    <td>
+                      <FaTrash
+                        className="ms-2 text-danger"
+                        onClick={() => deleteTimeLog(i)}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+
               <tr>
-                <th scope="row">{totalHours}</th>
-                <td>{totalBreaks}</td>
-                <td>{totalWorkedHours}</td>
+                <th scope="row">Totals</th>
+                <th>{totals.totalHours}</th>
+                <th>{totals.totalBreaks}</th>
+                <th>{totals.totalWorkedHours}</th>
               </tr>
             </tbody>
           </table>
@@ -175,10 +238,9 @@ const AddLog = () => {
                 newData = JSON.parse(data);
               }
               newData.push({
-                ...timeLog,
-                totalBreaks,
-                totalHours,
-                totalWorkedHours,
+                name: timeLogList[0].name,
+                logs: timeLogList,
+                ...totals,
               });
               localStorage.setItem("data", JSON.stringify(newData));
               navigate("/");

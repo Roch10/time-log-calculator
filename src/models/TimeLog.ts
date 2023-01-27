@@ -6,5 +6,9 @@ export type TimeLog = {
   eHr: string;
   eMin: string;
   eAA: string;
+  date?: string;
   breaks?: Array<TimeLog>;
+  totalBreaks?: number;
+  totalHours?: number;
+  totalWorkedHours?: number;
 };
